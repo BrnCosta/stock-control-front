@@ -1,0 +1,28 @@
+[
+  {
+    "asset": "HSML11",
+    "breakdown": [
+      {
+        "month": "JAN",
+        "value": 20
+      }
+    ]
+  },
+  {
+    "asset": "RECR11",
+    "breakdown": [
+      {
+        "month": "FEB",
+        "value": 76
+      },
+      {
+        "month": "MAR",
+        "value": 123
+      },
+      {
+        "month": "APR",
+        "value": 123
+      }
+    ]
+  }
+]

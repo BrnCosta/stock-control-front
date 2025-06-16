@@ -1,0 +1,64 @@
+[
+  {
+    "year": 2022,
+    "progression": [
+      {
+        "month": "JAN",
+        "value": 20
+      },
+      {
+        "month": "FEB",
+        "value": 45
+      },
+      {
+        "month": "MAR",
+        "value": 30
+      },
+      {
+        "month": "APR",
+        "value": 75
+      },
+      {
+        "month": "MAY",
+        "value": 55
+      },
+      {
+        "month": "JUN",
+        "value": 140
+      },
+      {
+        "month": "JUL",
+        "value": 60
+      },
+      {
+        "month": "AUG",
+        "value": 90
+      },
+      {
+        "month": "SEP",
+        "value": 120
+      },
+      {
+        "month": "OCT",
+        "value": 115
+      },
+      {
+        "month": "NOV",
+        "value": 125
+      },
+      {
+        "month": "DEC",
+        "value": 120
+      }
+    ]
+  },
+  {
+    "year": 2023,
+    "progression": [
+      {
+        "month": "JAN",
+        "value": 20
+      }
+    ]
+  }
+]

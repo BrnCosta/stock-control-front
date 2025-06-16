@@ -1,0 +1,50 @@
+[
+  {
+    "id": 1,
+    "total": 1702,
+    "date": "2025-06-16",
+    "tax": 100,
+    "assets": [
+      {
+        "id": 1,
+        "name": "HSML11",
+        "quantity": 100,
+        "price": 17.02,
+        "total": 1702,
+        "type": "buy"
+      },
+      {
+        "id": 2,
+        "name": "RECR11",
+        "quantity": 100,
+        "price": 17.02,
+        "total": 1702,
+        "type": "sell"
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "total": 1702,
+    "date": "2025-06-17",
+    "tax": 100,
+    "assets": [
+      {
+        "id": 1,
+        "name": "HSML11",
+        "quantity": 100,
+        "price": 17.02,
+        "total": 1702,
+        "type": "buy"
+      },
+      {
+        "id": 2,
+        "name": "RECR11",
+        "quantity": 100,
+        "price": 17.02,
+        "total": 1702,
+        "type": "buy"
+      }
+    ]
+  }
+]
