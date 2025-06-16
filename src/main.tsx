@@ -4,10 +4,12 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 
 import './index.css'
 
-import Champions from './pages/Champions.tsx'
+import Dividend from './pages/Dividend.tsx'
 import App from './App.tsx'
 import Home from './pages/Home.tsx'
 import ErrorPage from './pages/Error.tsx'
+import BuyAndSell from './pages/BuyAndSell.tsx'
+import Portfolio from './pages/Portfolio.tsx'
 
 const router = createBrowserRouter([
   {
@@ -20,8 +22,16 @@ const router = createBrowserRouter([
         element: <Home />,
       },
       {
-        path: 'champions',
-        element: <Champions />,
+        path: 'dividend',
+        element: <Dividend />,
+      },
+      {
+        path: 'buyandsell',
+        element: <BuyAndSell />,
+      },
+      {
+        path: 'portfolio',
+        element: <Portfolio />,
       },
     ],
   },

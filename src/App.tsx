@@ -9,10 +9,10 @@ export default function App() {
   const currentPath = useLocation().pathname
 
   const pageTitles: { [key: string]: string } = {
-    '/': 'Portfolio Overview',
-    '/champions': 'Buy and Sell',
-    '/skins': 'Dividend',
-    '/owned': 'Portfolio Composition',
+    '/': 'Overview',
+    '/dividend': 'Dividend',
+    '/buyandsell': 'Buy and Sell',
+    '/portfolio': 'Portfolio Composition',
   }
 
   const pageTitle = pageTitles[currentPath] || 'Overview'
@@ -20,7 +20,7 @@ export default function App() {
   const shouldShowWallet = currentPath !== '/'
 
   return (
-    <main className="flex">
+    <main className="flex h-screen overflow-hidden">
       <SideBar>
         <SideBarItem
           icon={<LuLayoutDashboard size={20} />}
@@ -29,33 +29,33 @@ export default function App() {
           linkRoute="/"
         />
         <SideBarItem
-          icon={<FaMoneyBillTransfer size={20} />}
-          text="Buy and Sell"
-          linkRoute="champions"
-          active={currentPath.startsWith('/champions')}
-        />
-        <SideBarItem
           icon={<MdAttachMoney size={20} />}
           text="Dividend"
-          linkRoute="skins"
-          active={currentPath.startsWith('/skins')}
+          linkRoute="dividend"
+          active={currentPath.startsWith('/dividend')}
+        />
+        <SideBarItem
+          icon={<FaMoneyBillTransfer size={20} />}
+          text="Buy and Sell"
+          linkRoute="buyandsell"
+          active={currentPath.startsWith('/buyandsell')}
         />
         <SideBarItem
           icon={<LuPieChart size={20} />}
           text="Portfolio Composition"
-          linkRoute="owned"
-          active={currentPath.startsWith('/owned')}
+          linkRoute="portfolio"
+          active={currentPath.startsWith('/portfolio')}
         />
       </SideBar>
-      <div className="w-full px-8 py-4">
-        <header className="flex justify-between items-center">
+      <div className="w-full flex flex-col overflow-hidden">
+        <header className="flex justify-between items-center px-8 py-4">
           <h1 className="text-2xl font-semibold">{pageTitle}</h1>
           <div className="flex items-center gap-2">
             {shouldShowWallet && <span className="text-lg">R$ 420,00</span>}
             <LuUser size={24} />
           </div>
         </header>
-        <div className="my-4">
+        <div className="flex-1 overflow-auto px-8 py-4">
           <Outlet />
         </div>
       </div>
