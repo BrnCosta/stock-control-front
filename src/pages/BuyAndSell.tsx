@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { LuChevronDown, LuChevronRight, LuFilter } from 'react-icons/lu'
+import { LuChevronDown, LuChevronRight, LuFilter, LuPlus, LuX, LuPencil } from 'react-icons/lu'
 import { getBuySellHistory } from '../services/buySellService'
 
 type AssetDetail = {
@@ -25,12 +25,30 @@ export default function BuyAndSell() {
   const [yearFilter, setYearFilter] = useState<string[]>([])
   const [typeFilter, setTypeFilter] = useState<string[]>([])
   const [assetFilter, setAssetFilter] = useState<string[]>([])
+  const [showAddModal, setShowAddModal] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [editingRow, setEditingRow] = useState<BuySellRow | null>(null)
 
-  // Dropdowns abertos
+  // Open dropdowns
   const [_, setOpenDropdown] = useState<string | null>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
-  // Fechar dropdown ao clicar fora
+  // State for new transaction
+  const [newTransaction, setNewTransaction] = useState({
+    date: '',
+    assets: [{ name: '', quantity: '', price: '', type: 'buy' }],
+    tax: ''
+  })
+
+  // State for transaction editing
+  const [editTransaction, setEditTransaction] = useState({
+    id: 0,
+    date: '',
+    tax: '',
+    assets: [{ id: 0, name: '', quantity: '', price: '', type: 'buy' }]
+  })
+
+  // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (
@@ -44,7 +62,7 @@ export default function BuyAndSell() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  // Opções dinâmicas
+  // Dynamic options
   const years = Array.from(
     new Set(rows.map(r => new Date(r.date).getFullYear().toString()))
   )
@@ -53,10 +71,10 @@ export default function BuyAndSell() {
   )
   const allTypes = ['buy', 'sell']
 
-  // Filtro aplicado
+  // Applied filter
   const filteredRows = rows
     .map(row => {
-      // Filtrar assets pelo tipo e asset selecionado
+      // Filter assets by type and selected asset
       let filteredAssets = row.assets
       if (typeFilter.length > 0) {
         filteredAssets = filteredAssets.filter(a =>
@@ -74,7 +92,7 @@ export default function BuyAndSell() {
       const yearOk =
         yearFilter.length === 0 ||
         yearFilter.includes(new Date(row.date).getFullYear().toString())
-      // Só mostra linhas que tenham pelo menos um asset após o filtro
+      // Only show rows that have at least one asset after filtering
       return yearOk && row.assets.length > 0
     })
 
@@ -96,13 +114,100 @@ export default function BuyAndSell() {
     setAssetFilter([])
   }
 
+  const handleAddAsset = () => {
+    setNewTransaction(prev => ({
+      ...prev,
+      assets: [...prev.assets, { name: '', quantity: '', price: '', type: 'buy' }]
+    }))
+  }
+
+  const handleRemoveAsset = (index: number) => {
+    setNewTransaction(prev => ({
+      ...prev,
+      assets: prev.assets.filter((_, i) => i !== index)
+    }))
+  }
+
+  const handleAssetChange = (index: number, field: string, value: string) => {
+    setNewTransaction(prev => ({
+      ...prev,
+      assets: prev.assets.map((asset, i) => 
+        i === index ? { ...asset, [field]: value } : asset
+      )
+    }))
+  }
+
+  const handleSaveTransaction = () => {
+    // Here you would implement the logic to save the transaction
+    console.log('New transaction:', newTransaction)
+    setShowAddModal(false)
+    setNewTransaction({
+      date: '',
+      assets: [{ name: '', quantity: '', price: '', type: 'buy' }],
+      tax: ''
+    })
+  }
+
+  const handleEditTransaction = (row: BuySellRow) => {
+    setEditingRow(row)
+    setEditTransaction({
+      id: row.id,
+      date: row.date,
+      tax: row.tax.toString(),
+      assets: row.assets.map(asset => ({
+        id: asset.id,
+        name: asset.name,
+        quantity: asset.quantity.toString(),
+        price: asset.price.toString(),
+        type: asset.type
+      }))
+    })
+    setShowEditModal(true)
+  }
+
+  const handleEditAssetChange = (index: number, field: string, value: string) => {
+    setEditTransaction(prev => ({
+      ...prev,
+      assets: prev.assets.map((asset, i) => 
+        i === index ? { ...asset, [field]: value } : asset
+      )
+    }))
+  }
+
+  const handleAddEditAsset = () => {
+    setEditTransaction(prev => ({
+      ...prev,
+      assets: [...prev.assets, { id: 0, name: '', quantity: '', price: '', type: 'buy' }]
+    }))
+  }
+
+  const handleRemoveEditAsset = (index: number) => {
+    setEditTransaction(prev => ({
+      ...prev,
+      assets: prev.assets.filter((_, i) => i !== index)
+    }))
+  }
+
+  const handleSaveEditTransaction = () => {
+    // Here you would implement the logic to save the edited transaction
+    console.log('Edited transaction:', editTransaction)
+    setShowEditModal(false)
+    setEditingRow(null)
+    setEditTransaction({
+      id: 0,
+      date: '',
+      tax: '',
+      assets: [{ id: 0, name: '', quantity: '', price: '', type: 'buy' }]
+    })
+  }
+
   useEffect(() => {
     getBuySellHistory().then(data => setRows(data))
   }, [])
 
   const [filterPanelOpen, setFilterPanelOpen] = useState(false)
 
-  // Chips dos filtros ativos
+  // Active filter chips
   function renderActiveChips() {
     const chips: { label: string; value: string; onRemove: () => void }[] = []
 
@@ -163,10 +268,10 @@ export default function BuyAndSell() {
 
   return (
     <div className="w-full p-6">
-      {/* Chips dos filtros ativos */}
+      {/* Active filter chips */}
       {renderActiveChips()}
-      {/* Botão Filters */}
-      <div className="mb-6 flex items-center">
+      {/* Action buttons */}
+      <div className="mb-6 flex items-center justify-between">
         <button
           type="button"
           className="flex items-center gap-2 bg-white border border-gray-300 rounded px-4 py-2 shadow-sm hover:bg-emerald-50 transition-colors text-emerald-700 font-medium"
@@ -174,8 +279,317 @@ export default function BuyAndSell() {
         >
           <LuFilter className="h-5 w-5" /> Filters
         </button>
+        
+        <button
+          type="button"
+          className="flex items-center gap-2 bg-emerald-500 text-white px-4 py-2 rounded-lg shadow-sm hover:bg-emerald-600 transition-colors font-medium"
+          onClick={() => setShowAddModal(true)}
+        >
+          <LuPlus className="h-5 w-5" /> Add Transaction
+        </button>
       </div>
-      {/* Painel de filtros */}
+
+      {/* Modal to edit transaction */}
+      {showEditModal && editingRow && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center p-6 border-b">
+              <h3 className="text-lg font-semibold">Edit Transaction #{editingRow.id}</h3>
+              <button
+                onClick={() => setShowEditModal(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <LuX size={24} />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-6">
+              {/* Date */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Date
+                </label>
+                <input
+                  type="date"
+                  value={editTransaction.date}
+                  onChange={(e) => setEditTransaction(prev => ({ ...prev, date: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                />
+              </div>
+
+              {/* Tax */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Tax ($)
+                </label>
+                <input
+                  type="number"
+                  value={editTransaction.tax}
+                  onChange={(e) => setEditTransaction(prev => ({ ...prev, tax: e.target.value }))}
+                  placeholder="0.00"
+                  step="0.01"
+                  min="0"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                />
+              </div>
+
+              {/* Assets */}
+              <div>
+                <div className="flex justify-between items-center mb-4">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Assets
+                  </label>
+                  <button
+                    type="button"
+                    onClick={handleAddEditAsset}
+                    className="flex items-center gap-1 text-emerald-600 hover:text-emerald-700 text-sm font-medium"
+                  >
+                    <LuPlus size={16} /> Add Asset
+                  </button>
+                </div>
+
+                <div className="space-y-4">
+                  {editTransaction.assets.map((asset, index) => (
+                    <div key={index} className="grid grid-cols-12 gap-4 items-end p-4 border border-gray-200 rounded-lg">
+                      <div className="col-span-3">
+                        <label className="block text-xs text-gray-600 mb-1">Asset</label>
+                        <input
+                          type="text"
+                          value={asset.name}
+                          onChange={(e) => handleEditAssetChange(index, 'name', e.target.value)}
+                          placeholder="Asset name"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm"
+                        />
+                      </div>
+                      <div className="col-span-2">
+                        <label className="block text-xs text-gray-600 mb-1">Quantity</label>
+                        <input
+                          type="number"
+                          value={asset.quantity}
+                          onChange={(e) => handleEditAssetChange(index, 'quantity', e.target.value)}
+                          placeholder="0"
+                          min="0"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm"
+                        />
+                      </div>
+                      <div className="col-span-2">
+                        <label className="block text-xs text-gray-600 mb-1">Price</label>
+                        <input
+                          type="number"
+                          value={asset.price}
+                          onChange={(e) => handleEditAssetChange(index, 'price', e.target.value)}
+                          placeholder="0.00"
+                          step="0.01"
+                          min="0"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm"
+                        />
+                      </div>
+                      <div className="col-span-2">
+                        <label className="block text-xs text-gray-600 mb-1">Type</label>
+                        <select
+                          value={asset.type}
+                          onChange={(e) => handleEditAssetChange(index, 'type', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm"
+                        >
+                          <option value="buy">Buy</option>
+                          <option value="sell">Sell</option>
+                        </select>
+                      </div>
+                      <div className="col-span-2">
+                        <label className="block text-xs text-gray-600 mb-1">Total</label>
+                        <div className="px-3 py-2 bg-gray-50 rounded-md text-sm font-medium">
+                          $ {((parseFloat(asset.quantity) || 0) * (parseFloat(asset.price) || 0)).toFixed(2)}
+                        </div>
+                      </div>
+                      <div className="col-span-1">
+                        {editTransaction.assets.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveEditAsset(index)}
+                            className="text-red-500 hover:text-red-700"
+                          >
+                            <LuX size={16} />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Buttons */}
+              <div className="flex justify-end gap-3 pt-4 border-t">
+                <button
+                  type="button"
+                  onClick={() => setShowEditModal(false)}
+                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveEditTransaction}
+                  className="px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal to add transaction */}
+      {showAddModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center p-6 border-b">
+              <h3 className="text-lg font-semibold">Add New Transaction</h3>
+              <button
+                onClick={() => setShowAddModal(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <LuX size={24} />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-6">
+              {/* Date */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Date
+                </label>
+                <input
+                  type="date"
+                  value={newTransaction.date}
+                  onChange={(e) => setNewTransaction(prev => ({ ...prev, date: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                />
+              </div>
+
+              {/* Tax */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Tax ($)
+                </label>
+                <input
+                  type="number"
+                  value={newTransaction.tax}
+                  onChange={(e) => setNewTransaction(prev => ({ ...prev, tax: e.target.value }))}
+                  placeholder="0.00"
+                  step="0.01"
+                  min="0"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                />
+              </div>
+
+              {/* Assets */}
+              <div>
+                <div className="flex justify-between items-center mb-4">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Assets
+                  </label>
+                  <button
+                    type="button"
+                    onClick={handleAddAsset}
+                    className="flex items-center gap-1 text-emerald-600 hover:text-emerald-700 text-sm font-medium"
+                  >
+                    <LuPlus size={16} /> Add Asset
+                  </button>
+                </div>
+
+                <div className="space-y-4">
+                  {newTransaction.assets.map((asset, index) => (
+                    <div key={index} className="grid grid-cols-12 gap-4 items-end p-4 border border-gray-200 rounded-lg">
+                      <div className="col-span-3">
+                        <label className="block text-xs text-gray-600 mb-1">Asset</label>
+                        <input
+                          type="text"
+                          value={asset.name}
+                          onChange={(e) => handleAssetChange(index, 'name', e.target.value)}
+                          placeholder="Asset name"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm"
+                        />
+                      </div>
+                      <div className="col-span-2">
+                        <label className="block text-xs text-gray-600 mb-1">Quantity</label>
+                        <input
+                          type="number"
+                          value={asset.quantity}
+                          onChange={(e) => handleAssetChange(index, 'quantity', e.target.value)}
+                          placeholder="0"
+                          min="0"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm"
+                        />
+                      </div>
+                      <div className="col-span-2">
+                        <label className="block text-xs text-gray-600 mb-1">Price</label>
+                        <input
+                          type="number"
+                          value={asset.price}
+                          onChange={(e) => handleAssetChange(index, 'price', e.target.value)}
+                          placeholder="0.00"
+                          step="0.01"
+                          min="0"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm"
+                        />
+                      </div>
+                      <div className="col-span-2">
+                        <label className="block text-xs text-gray-600 mb-1">Type</label>
+                        <select
+                          value={asset.type}
+                          onChange={(e) => handleAssetChange(index, 'type', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm"
+                        >
+                          <option value="buy">Buy</option>
+                          <option value="sell">Sell</option>
+                        </select>
+                      </div>
+                      <div className="col-span-2">
+                        <label className="block text-xs text-gray-600 mb-1">Total</label>
+                        <div className="px-3 py-2 bg-gray-50 rounded-md text-sm font-medium">
+                          $ {((parseFloat(asset.quantity) || 0) * (parseFloat(asset.price) || 0)).toFixed(2)}
+                        </div>
+                      </div>
+                      <div className="col-span-1">
+                        {newTransaction.assets.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveAsset(index)}
+                            className="text-red-500 hover:text-red-700"
+                          >
+                            <LuX size={16} />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Buttons */}
+              <div className="flex justify-end gap-3 pt-4 border-t">
+                <button
+                  type="button"
+                  onClick={() => setShowAddModal(false)}
+                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveTransaction}
+                  className="px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors"
+                >
+                  Save Transaction
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Filter panel */}
       {filterPanelOpen && (
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-black bg-opacity-30">
           <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md relative animate-fade-in">
@@ -188,7 +602,7 @@ export default function BuyAndSell() {
               ×
             </button>
             <h3 className="text-lg font-semibold mb-4">Filters</h3>
-            {/* Ano */}
+            {/* Year */}
             <div className="mb-4">
               <div className="font-medium text-sm mb-1">Year</div>
               <div className="flex flex-col gap-1 max-h-32 overflow-auto">
@@ -207,7 +621,7 @@ export default function BuyAndSell() {
                 ))}
               </div>
             </div>
-            {/* Tipo */}
+            {/* Type */}
             <div className="mb-4">
               <div className="font-medium text-sm mb-1">Type</div>
               <div className="flex flex-col gap-1">
@@ -264,10 +678,11 @@ export default function BuyAndSell() {
           </div>
         </div>
       )}
-      <div className="bg-white rounded-2xl shadow-lg p-0 overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-lg p-0 overflow-hidden relative">
         <table className="w-full min-w-[700px]">
           <thead className="bg-gray-50">
             <tr>
+              <th className="w-16 py-3 px-4"></th>
               <th className="text-left py-3 px-4">ID</th>
               <th className="text-left py-3 px-4">DATE</th>
               <th className="text-left py-3 px-4">TOTAL</th>
@@ -276,10 +691,10 @@ export default function BuyAndSell() {
             </tr>
           </thead>
           <tbody>
-            {filteredRows.map(row => (
+            {filteredRows.map((row, index) => (
               <React.Fragment key={row.id}>
                 <tr
-                  className="border-t hover:bg-emerald-50/40 cursor-pointer transition-colors duration-200 group"
+                  className="border-t hover:bg-emerald-50/40 cursor-pointer transition-colors duration-200 group relative"
                   onClick={() =>
                     setExpanded(expanded === row.id ? null : row.id)
                   }
@@ -287,6 +702,22 @@ export default function BuyAndSell() {
                     setExpanded(expanded === row.id ? null : row.id)
                   }
                 >
+                  {/* Edit icon on hover */}
+                  <td className="w-16 py-3 px-4">
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleEditTransaction(row)
+                        }}
+                        className="p-2 bg-emerald-500 text-white rounded-full shadow-lg hover:bg-emerald-600 transition-colors"
+                      >
+                        <LuPencil size={16} />
+                      </button>
+                    </div>
+                  </td>
+                  
                   <td className="py-3 px-4 font-medium text-emerald-600">
                     #{row.id}
                   </td>
@@ -294,14 +725,14 @@ export default function BuyAndSell() {
                     {new Date(row.date).toLocaleDateString()}
                   </td>
                   <td className="py-3 px-4 font-semibold text-emerald-500">
-                    R${' '}
-                    {row.total.toLocaleString('pt-BR', {
+                    ${' '}
+                    {row.total.toLocaleString('en-US', {
                       minimumFractionDigits: 2,
                     })}
                   </td>
                   <td className="py-3 px-4 text-emerald-400">
-                    R${' '}
-                    {row.tax.toLocaleString('pt-BR', {
+                    ${' '}
+                    {row.tax.toLocaleString('en-US', {
                       minimumFractionDigits: 2,
                     })}
                   </td>
@@ -327,9 +758,9 @@ export default function BuyAndSell() {
                     </button>
                   </td>
                 </tr>
-                {/* Detalhes com animação suave */}
+                {/* Details with smooth animation */}
                 <tr>
-                  <td colSpan={5} className="p-0">
+                  <td colSpan={6} className="p-0">
                     <div
                       className={`transition-all duration-300 overflow-hidden bg-gray-50 ${expanded === row.id ? 'max-h-[500px] py-2' : 'max-h-0 py-0'}`}
                       style={{
@@ -364,8 +795,8 @@ export default function BuyAndSell() {
                                   {detail.name}
                                 </td>
                                 <td className="py-2 px-4 text-center">
-                                  R${' '}
-                                  {detail.price.toLocaleString('pt-BR', {
+                                  ${' '}
+                                  {detail.price.toLocaleString('en-US', {
                                     minimumFractionDigits: 2,
                                   })}
                                 </td>
@@ -373,8 +804,8 @@ export default function BuyAndSell() {
                                   {detail.quantity}
                                 </td>
                                 <td className="py-2 px-4 text-center text-emerald-500">
-                                  R${' '}
-                                  {detail.total.toLocaleString('pt-BR', {
+                                  ${' '}
+                                  {detail.total.toLocaleString('en-US', {
                                     minimumFractionDigits: 2,
                                   })}
                                 </td>

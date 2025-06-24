@@ -10,8 +10,13 @@ import Home from './pages/Home.tsx'
 import ErrorPage from './pages/Error.tsx'
 import BuyAndSell from './pages/BuyAndSell.tsx'
 import Portfolio from './pages/Portfolio.tsx'
+import Login from './pages/Login.tsx'
 
 const router = createBrowserRouter([
+  {
+    path: '/login',
+    element: <Login />,
+  },
   {
     path: '/',
     element: <App />,
