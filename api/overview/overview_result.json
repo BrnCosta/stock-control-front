@@ -1,0 +1,21 @@
+{
+    "invested_amount": 100000,
+    "current_value": 105000,
+    "available_balance": 10000,
+    "assets": [
+        {
+            "name": "MGLU3",
+            "average_price": 15.17,
+            "current_price": 9.54,
+            "quantity": 1000,
+            "type": "stock"            
+        },
+        {
+            "name": "BRCO11",
+            "average_price": 102.44,
+            "current_price": 108.41,
+            "quantity": 30,
+            "type": "reit"            
+        }   
+    ]
+}

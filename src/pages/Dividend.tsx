@@ -133,7 +133,7 @@ export default function Dividend() {
             <LuWallet className="h-8 w-8 text-emerald-500" />
             <div className="ml-4">
               <div className="text-sm text-gray-500">Wallet Value</div>
-              <div className="text-2xl font-bold text-gray-900">
+              <div className="text-2xl font-bold text-gray-400">
                 R$ 420,00
               </div>
             </div>

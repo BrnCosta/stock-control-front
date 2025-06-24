@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import {
   LuBarChart3,
   LuDollarSign,
@@ -5,8 +6,76 @@ import {
   LuWallet,
 } from 'react-icons/lu'
 import HomeCard from '../components/home-card'
+import { getOverviewData, type OverviewData } from '../services/homeService'
 
 export default function Home() {
+  const [data, setData] = useState<OverviewData | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const overviewData = await getOverviewData()
+        setData(overviewData)
+      } catch (error) {
+        console.error('Erro ao carregar dados:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [])
+
+  if (loading) {
+    return (
+      <div id="content">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-gray-500">Carregando...</div>
+        </div>
+      </div>
+    )
+  }
+
+  if (!data) {
+    return (
+      <div id="content">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-red-500">Erro ao carregar dados</div>
+        </div>
+      </div>
+    )
+  }
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    }).format(value)
+  }
+
+  const formatPercentage = (value: number) => {
+    return `${value >= 0 ? '+' : ''}${value.toFixed(2)}%`
+  }
+
+  const calculateTotalInvestment = (asset: any) => {
+    return asset.average_price * asset.quantity
+  }
+
+  const calculateCurrentTotal = (asset: any) => {
+    return asset.current_price * asset.quantity
+  }
+
+  const calculateGainLoss = (asset: any) => {
+    return calculateCurrentTotal(asset) - calculateTotalInvestment(asset)
+  }
+
+  const calculateGainLossPercentage = (asset: any) => {
+    const totalInvestment = calculateTotalInvestment(asset)
+    const gainLoss = calculateGainLoss(asset)
+    return (gainLoss / totalInvestment) * 100
+  }
+
   return (
     <div id="content">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
@@ -15,7 +84,7 @@ export default function Home() {
           color="emerald"
         >
           <p className="text-sm text-gray-500">Investment</p>
-          <p className="text-xl font-semibold">R$ 25.558,06</p>
+          <p className="text-xl font-semibold">{formatCurrency(data.invested_amount)}</p>
         </HomeCard>
 
         <HomeCard
@@ -23,7 +92,7 @@ export default function Home() {
           color="blue"
         >
           <p className="text-sm text-gray-500">Current</p>
-          <p className="text-xl font-semibold">R$ 25.170,70</p>
+          <p className="text-xl font-semibold">{formatCurrency(data.current_value)}</p>
         </HomeCard>
 
         <HomeCard
@@ -31,9 +100,11 @@ export default function Home() {
           color="red"
         >
           <p className="text-sm text-gray-500">Earnings</p>
-          <p className="text-xl font-semibold text-red-500">
-            -R$ 387,36
-            <span className="pl-1 text-xs align-top">(-1.52%)</span>
+          <p className={`text-xl font-semibold ${(data.current_value - data.invested_amount) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+            {formatCurrency(data.current_value - data.invested_amount)}
+            <span className={`pl-1 text-xs align-top ${(data.current_value - data.invested_amount) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+              ({formatPercentage(((data.current_value - data.invested_amount) / data.invested_amount) * 100)})
+            </span>
           </p>
         </HomeCard>
 
@@ -42,7 +113,7 @@ export default function Home() {
           color="purple"
         >
           <p className="text-sm text-gray-500">Available Balance</p>
-          <p className="text-xl font-semibold">R$ 420,00</p>
+          <p className="text-xl font-semibold">{formatCurrency(data.available_balance)}</p>
         </HomeCard>
       </div>
 
@@ -62,45 +133,55 @@ export default function Home() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
-            {[...Array(5)].map((_, index) => (
-              <tr key={index.toString()}>
-                <td className="px-6 py-4 whitespace-nowrap border-r">
-                  {index % 2 === 0 ? 'MGLU3' : 'BRCO11'}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-center">
-                  R$ {index % 2 === 0 ? '2,34' : '96,25'}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-center">
-                  {index % 2 === 0 ? '3000' : '20'}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-center border-r">
-                  R$ {index % 2 === 0 ? '7.021,90' : '1.925,01'}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-center">
-                  R$ {index % 2 === 0 ? '1,80' : '123,00'}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-center border-r">
-                  R$ {index % 2 === 0 ? '5.400,00' : '2.460,00'}
-                </td>
-                <td
-                  className={`px-6 py-4 whitespace-nowrap text-center ${index % 2 === 0 ? 'text-red-500' : 'text-green-500'}`}
-                >
-                  {index % 2 === 0 ? '-R$ 1.621,90' : 'R$ 534,99'}
-                </td>
-                <td
-                  className={`px-6 py-4 whitespace-nowrap text-center ${index % 2 === 0 ? 'text-red-500' : 'text-green-500'}`}
-                >
-                  {index % 2 === 0 ? '-23,10%' : '27,79%'}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-center">
-                  <span
-                    className={`px-2 py-1 text-xs rounded-full ${index % 2 === 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800'}`}
+            {data.assets.map((asset, index) => {
+              const gainLoss = calculateGainLoss(asset)
+              const gainLossPercentage = calculateGainLossPercentage(asset)
+              const isPositive = gainLoss >= 0
+
+              return (
+                <tr key={index.toString()}>
+                  <td className="px-6 py-4 whitespace-nowrap border-r">
+                    {asset.name}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-center">
+                    {formatCurrency(asset.average_price)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-center">
+                    {asset.quantity.toLocaleString('pt-BR')}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-center border-r">
+                    {formatCurrency(calculateTotalInvestment(asset))}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-center">
+                    {formatCurrency(asset.current_price)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-center border-r">
+                    {formatCurrency(calculateCurrentTotal(asset))}
+                  </td>
+                  <td
+                    className={`px-6 py-4 whitespace-nowrap text-center ${isPositive ? 'text-green-500' : 'text-red-500'}`}
                   >
-                    {index % 2 === 0 ? 'STOCK' : 'FI'}
-                  </span>
-                </td>
-              </tr>
-            ))}
+                    {formatCurrency(gainLoss)}
+                  </td>
+                  <td
+                    className={`px-6 py-4 whitespace-nowrap text-center ${isPositive ? 'text-green-500' : 'text-red-500'}`}
+                  >
+                    {formatPercentage(gainLossPercentage)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-center">
+                    <span
+                      className={`px-2 py-1 text-xs rounded-full ${
+                        asset.type === 'stock' 
+                          ? 'bg-emerald-100 text-emerald-800' 
+                          : 'bg-blue-100 text-blue-800'
+                      }`}
+                    >
+                      {asset.type.toUpperCase()}
+                    </span>
+                  </td>
+                </tr>
+              )
+            })}
           </tbody>
         </table>
       </div>
