@@ -1,0 +1,128 @@
+<div class="header">
+  <h2>Transactions History</h2>
+  <p>Manage and log your trades</p>
+</div>
+
+<div class="transactions-container">
+  <div class="form-section">
+    <app-card title="Add New Trade">
+      <form [formGroup]="tradeForm" (ngSubmit)="onSubmit()" class="trade-form">
+        <!-- Shared Trade Fields -->
+        <div class="shared-fields">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="date">Date</label>
+              <input id="date" type="date" formControlName="date" class="form-control">
+            </div>
+            <div class="form-group">
+              <label for="tax">Tax</label>
+              <input id="tax" type="number" step="0.01" formControlName="tax" class="form-control">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Currency</label>
+            <div class="segmented-control">
+              <label class="segment" [class.active]="tradeForm.get('currency')?.value === 'CAD'">
+                <input type="radio" formControlName="currency" value="CAD"> CAD
+              </label>
+              <label class="segment" [class.active]="tradeForm.get('currency')?.value === 'BRL'">
+                <input type="radio" formControlName="currency" value="BRL"> BRL
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Transactions FormArray -->
+        <div formArrayName="transactions" class="transactions-array">
+          <div *ngFor="let txGroup of transactionsFormArray.controls; let i = index" [formGroupName]="i"
+            class="transaction-form-item">
+            <div class="tx-form-header">
+              <h4>Transaction #{{ i + 1 }}</h4>
+              <button type="button" class="btn-remove" (click)="removeTransaction(i)"
+                *ngIf="transactionsFormArray.length > 1">
+                &times;
+              </button>
+            </div>
+
+            <div class="form-group">
+              <label [for]="'ticker-' + i">Ticker</label>
+              <input [id]="'ticker-' + i" type="text" formControlName="ticker" placeholder="e.g. AAPL">
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>Type</label>
+                <div class="segmented-control">
+                  <label class="segment" [class.active]="txGroup.get('operationType')?.value === '1'">
+                    <input type="radio" formControlName="operationType" value="1"> Buy
+                  </label>
+                  <label class="segment" [class.active]="txGroup.get('operationType')?.value === '0'">
+                    <input type="radio" formControlName="operationType" value="0"> Sell
+                  </label>
+                </div>
+              </div>
+              <div class="form-group">
+                <label [for]="'quantity-' + i">Quantity</label>
+                <input [id]="'quantity-' + i" type="number" step="0.01" formControlName="quantity" class="form-control">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label [for]="'price-' + i">Price</label>
+              <input [id]="'price-' + i" type="number" step="0.01" formControlName="price" class="form-control">
+            </div>
+          </div>
+        </div>
+
+        <button type="button" class="btn-secondary" (click)="addTransaction()">
+          + Add another asset to this trade
+        </button>
+
+        <button type="submit" class="btn-primary" [disabled]="tradeForm.invalid || submitting">
+          {{ submitting ? 'Submitting Trade...' : 'Save Trade' }}
+        </button>
+      </form>
+    </app-card>
+  </div>
+
+  <div class="list-section">
+    <app-card title="Recent Trades">
+      <div *ngIf="loading" class="state-message">Loading trades...</div>
+      <div *ngIf="!loading && trades.length === 0" class="state-message">No trades found.</div>
+
+      <div class="trade-list" *ngIf="!loading && trades.length > 0">
+        <div class="trade-item" *ngFor="let trade of trades" [class.expanded]="isExpanded(trade.id)">
+          <div class="trade-header" (click)="toggleTrade(trade.id)">
+            <div class="trade-main-info">
+              <span class="toggle-icon">{{ isExpanded(trade.id) ? '▾' : '▸' }}</span>
+              <strong>{{ trade.date | date:'mediumDate' }}</strong>
+              <span class="badge">{{ trade.currency }}</span>
+              <span class="tx-count">({{ trade.transactions.length }} assets)</span>
+            </div>
+            <div class="trade-summary-values">
+              <small *ngIf="trade.tax" class="tax-info">Fees: {{ trade.tax | currency:trade.currency }}</small>
+            </div>
+          </div>
+
+          <div class="transaction-sublist" *ngIf="isExpanded(trade.id)">
+            <div class="transaction-item" *ngFor="let tx of trade.transactions">
+              <div class="tx-main">
+                <span class="tx-type" [class.buy]="isBuy(tx)" [class.sell]="!isBuy(tx)">
+                  {{ getOperationTypeName(tx) }}
+                </span>
+                <span class="tx-ticker">{{ tx.assetTicker || tx.asset?.ticker || (tx.assetId ? 'ID: ' +
+                  tx.assetId.substring(0, 6) : 'Unknown') }}</span>
+              </div>
+              <div class="tx-details">
+                <span>{{ tx.quantity }} units @ {{ tx.price | currency:trade.currency }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </app-card>
+  </div>
+</div>

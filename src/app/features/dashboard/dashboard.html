@@ -1,0 +1,91 @@
+<div class="dashboard-header">
+  <div>
+    <h2>Welcome back, Bruno Costa</h2>
+    <span class="badge">PREMIUM MEMBER</span>
+  </div>
+  <div class="last-update" *ngIf="lastUpdate">
+    Last updated: {{ lastUpdate | date:'medium' }}
+    <button class="icon-btn refresh-btn" title="Refresh data" (click)="updateAssetsPrices()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.92-12.28l5.67 5.67" />
+      </svg>
+    </button>
+  </div>
+</div>
+
+<div class="kpi-grid" *ngIf="!loading && balance">
+  <app-card title="Current Value">
+    <div class="kpi-value">{{ balance.currentInvested | currency:'BRL' }}</div>
+  </app-card>
+  <app-card title="Total Invested">
+    <div class="kpi-value">{{ balance.totalInvested | currency:'BRL' }}</div>
+  </app-card>
+  <app-card title="Total Gain / Loss">
+    <div class="kpi-value" [class.positive]="balance.totalGain >= 0" [class.negative]="balance.totalGain < 0">
+      {{ balance.totalGain >= 0 ? '+' : '' }}{{ balance.totalGain | currency:'BRL' }}
+    </div>
+  </app-card>
+  <app-card title="Gain %">
+    <div class="kpi-value" [class.positive]="balance.gainPercentage >= 0" [class.negative]="balance.gainPercentage < 0">
+      {{ balance.gainPercentage >= 0 ? '+' : '' }}{{ balance.gainPercentage | number:'1.2-2' }}%
+    </div>
+  </app-card>
+</div>
+
+<div class="dashboard-content" *ngIf="!loading">
+  <app-card title="Holdings Details" class="holdings-card">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Asset</th>
+          <th>Type</th>
+          <th>Quantity</th>
+          <th>Avg Price</th>
+          <th>Current Price</th>
+          <th>Gain</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let pos of positions">
+          <td><strong>{{ pos.ticker }}</strong></td>
+          <td><span class="badge">{{ pos.assetType }}</span></td>
+          <td>{{ pos.quantity }}</td>
+          <td>{{ pos.averagePrice | currency:'BRL' }}</td>
+          <td>{{ pos.currentPrice | currency:'BRL' }}</td>
+          <td [class.positive]="pos.currentGain >= 0" [class.negative]="pos.currentGain < 0">
+            {{ pos.currentGain >= 0 ? '+' : '' }}{{ pos.currentGain | currency:'BRL' }}
+            <small>({{ pos.gainPercentage | number:'1.2-2' }}%)</small>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <div *ngIf="positions.length === 0" class="empty-state">
+      No holdings found. Go to Transactions to add a trade.
+    </div>
+  </app-card>
+
+  <app-card title="Portfolio Distribution" class="insights-card" *ngIf="wallet">
+    <div class="insights-content">
+      <p style="margin-top: 0; color: var(--text-secondary); margin-bottom: 1.5rem;">
+        Your portfolio is currently distributed across {{ wallet.assetTypes.length }} asset types.
+      </p>
+
+      <div class="chart-container" style="position: relative; height: 200px; width: 100%;">
+        <canvas baseChart *ngIf="pieChartData" [data]="pieChartData" [options]="pieChartOptions" [type]="'pie'">
+        </canvas>
+      </div>
+
+      <div *ngFor="let item of wallet.assetTypes">
+        <div class="wallet-total">
+          <span style="color: var(--text-secondary);">{{ item.assetType | titlecase }}:</span>
+          <strong>{{ item.value | currency:'BRL' }}</strong>
+        </div>
+      </div>
+    </div>
+  </app-card>
+</div>
+
+<div *ngIf="loading" class="loading-state">
+  Loading portfolio data...
+</div>

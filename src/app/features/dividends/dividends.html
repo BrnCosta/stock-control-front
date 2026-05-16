@@ -1,0 +1,96 @@
+<div class="header-container">
+  <div class="header">
+    <h2>Dividends</h2>
+    <p>Track your passive income</p>
+  </div>
+  <div class="filter-controls">
+    <div class="form-group">
+      <label for="yearFilter">Filter by Year</label>
+      <select id="yearFilter" (change)="onYearChange(yearSelect.value)" #yearSelect [value]="selectedYear">
+        <option *ngFor="let year of availableYears" [value]="year">{{ year }}</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<div class="dividends-grid">
+  <!-- Left Column: Stats and Form -->
+  <div class="side-section">
+    <div class="stats-row">
+      <app-card class="stat-card">
+        <div class="stat-label">Total in {{ selectedYear }}</div>
+        <div class="stat-value small">{{ totalYearIncome | currency }}</div>
+      </app-card>
+      <app-card class="stat-card">
+        <div class="stat-label">Avg. Monthly</div>
+        <div class="stat-value small">{{ avgMonthlyIncome | currency }}</div>
+      </app-card>
+    </div>
+
+    <app-card title="Log Dividend" class="form-card">
+      <form [formGroup]="dividendForm" (ngSubmit)="onSubmit()" class="dividend-form">
+        <div class="form-group">
+          <label for="ticker">Asset Ticker</label>
+          <input id="ticker" type="text" formControlName="ticker" placeholder="e.g. AAPL">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="date">Date</label>
+            <input id="date" type="date" formControlName="date">
+          </div>
+          <div class="form-group">
+            <label for="value">Value</label>
+            <input id="value" type="number" step="0.01" formControlName="value">
+          </div>
+        </div>
+
+        <button type="submit" class="btn-primary" [disabled]="dividendForm.invalid || submitting">
+          {{ submitting ? 'Logging...' : 'Add Dividend' }}
+        </button>
+      </form>
+    </app-card>
+  </div>
+
+  <!-- Right Column: Monthly Bar Chart -->
+  <div class="main-section">
+    <app-card title="Monthly Performance" class="chart-card">
+      <div *ngIf="loading" class="state-message">Loading chart...</div>
+      <div *ngIf="!loading && totalYearIncome === 0" class="state-message">No data available for {{ selectedYear }}
+      </div>
+      <div class="chart-container" *ngIf="!loading && totalYearIncome > 0">
+        <canvas baseChart [data]="barChartData" [options]="barChartOptions" [plugins]="barChartPlugins"
+          [type]="barChartType">
+        </canvas>
+      </div>
+    </app-card>
+  </div>
+</div>
+
+<!-- Full Width Bottom Section: Matrix Table -->
+<div class="bottom-section">
+  <app-card title="Monthly Breakdown by Asset">
+    <div *ngIf="loading" class="state-message">Loading data...</div>
+    <div *ngIf="!loading && assetMonthlyData.length === 0" class="state-message">No data for {{ selectedYear }}</div>
+    <div class="table-container matrix" *ngIf="!loading && assetMonthlyData.length > 0">
+      <table class="data-table matrix-table">
+        <thead>
+          <tr>
+            <th class="ticker-col">Ticker</th>
+            <th *ngFor="let month of monthsHeader" class="month-col text-right">{{ month }}</th>
+            <th class="total-col text-right">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of assetMonthlyData">
+            <td class="ticker-col"><strong>{{ item.ticker }}</strong></td>
+            <td *ngFor="let val of item.months" class="month-col text-right">
+              {{ val === '-' ? '-' : (val | currency:'USD':'symbol':'1.2-2') }}
+            </td>
+            <td class="total-col text-right"><strong>{{ item.total | currency }}</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </app-card>
+</div>

@@ -1,0 +1,56 @@
+<div class="header">
+  <h2>Portfolio Simulation</h2>
+  <p>Project your future wealth with compound interest</p>
+</div>
+
+<div class="simulation-container">
+  <div class="side-section">
+    <app-card title="Parameters">
+      <form [formGroup]="simForm" class="sim-form">
+        <div class="form-group">
+          <label for="initialAmount">Initial Investment ($)</label>
+          <input id="initialAmount" type="number" formControlName="initialAmount">
+        </div>
+        <div class="form-group">
+          <label for="monthlyContribution">Monthly Contribution ($)</label>
+          <input id="monthlyContribution" type="number" formControlName="monthlyContribution">
+        </div>
+        <div class="form-group">
+          <label for="annualRate">Estimated Annual Return (%)</label>
+          <input id="annualRate" type="number" step="0.1" formControlName="annualRate">
+        </div>
+        <div class="form-group">
+          <label for="years">Investment Horizon (Years)</label>
+          <input id="years" type="number" formControlName="years">
+        </div>
+      </form>
+    </app-card>
+
+    <div class="results-summary">
+      <div class="result-box">
+        <span class="result-label">Total Principal</span>
+        <span class="result-value">{{ totalPrincipal | currency:'USD':'symbol':'1.0-0' }}</span>
+      </div>
+      <div class="result-box interest">
+        <span class="result-label">Total Interest Earned</span>
+        <span class="result-value">+{{ totalInterest | currency:'USD':'symbol':'1.0-0' }}</span>
+      </div>
+      <div class="result-box total">
+        <span class="result-label">Future Balance</span>
+        <span class="result-value">{{ finalBalance | currency:'USD':'symbol':'1.0-0' }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="main-section">
+    <app-card title="Wealth Projection">
+      <div class="chart-container chart-large">
+        <canvas baseChart
+          [data]="lineChartData"
+          [options]="lineChartOptions"
+          [type]="lineChartType">
+        </canvas>
+      </div>
+    </app-card>
+  </div>
+</div>
