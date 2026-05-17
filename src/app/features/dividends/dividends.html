@@ -19,11 +19,11 @@
     <div class="stats-row">
       <app-card class="stat-card">
         <div class="stat-label">Total in {{ selectedYear }}</div>
-        <div class="stat-value small">{{ totalYearIncome | currency }}</div>
+        <div class="stat-value small">{{ totalYearIncome | currency:'BRL':'symbol':'1.2-2' }}</div>
       </app-card>
       <app-card class="stat-card">
         <div class="stat-label">Avg. Monthly</div>
-        <div class="stat-value small">{{ avgMonthlyIncome | currency }}</div>
+        <div class="stat-value small">{{ avgMonthlyIncome | currency:'BRL':'symbol':'1.2-2' }}</div>
       </app-card>
     </div>
 
@@ -85,9 +85,9 @@
           <tr *ngFor="let item of assetMonthlyData">
             <td class="ticker-col"><strong>{{ item.ticker }}</strong></td>
             <td *ngFor="let val of item.months" class="month-col text-right">
-              {{ val === '-' ? '-' : (val | currency:'USD':'symbol':'1.2-2') }}
+              {{ val === '-' ? '-' : (val | currency:'BRL':'symbol':'1.2-2') }}
             </td>
-            <td class="total-col text-right"><strong>{{ item.total | currency }}</strong></td>
+            <td class="total-col text-right"><strong>{{ item.total | currency:'BRL':'symbol':'1.2-2' }}</strong></td>
           </tr>
         </tbody>
       </table>

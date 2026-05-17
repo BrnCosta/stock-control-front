@@ -29,15 +29,15 @@
     <div class="results-summary">
       <div class="result-box">
         <span class="result-label">Total Principal</span>
-        <span class="result-value">{{ totalPrincipal | currency:'USD':'symbol':'1.0-0' }}</span>
+        <span class="result-value">{{ totalPrincipal | currency:'BRL':'symbol':'1.0-0' }}</span>
       </div>
       <div class="result-box interest">
         <span class="result-label">Total Interest Earned</span>
-        <span class="result-value">+{{ totalInterest | currency:'USD':'symbol':'1.0-0' }}</span>
+        <span class="result-value">+{{ totalInterest | currency:'BRL':'symbol':'1.0-0' }}</span>
       </div>
       <div class="result-box total">
         <span class="result-label">Future Balance</span>
-        <span class="result-value">{{ finalBalance | currency:'USD':'symbol':'1.0-0' }}</span>
+        <span class="result-value">{{ finalBalance | currency:'BRL':'symbol':'1.0-0' }}</span>
       </div>
     </div>
   </div>
