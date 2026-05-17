@@ -38,7 +38,7 @@ jobs:
               uses: actions/upload-artifact@v7
               with:
                 name: angular-build
-                path: $GITHUB_WORKSPACE/dist/stock-control/
+                path: dist
     
     deploy:
         needs: build_angular
