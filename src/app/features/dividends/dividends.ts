@@ -142,7 +142,7 @@ export class Dividends implements OnInit {
 
     // 2. Calculate Stats
     this.totalYearIncome = monthValues.reduce((sum, val) => sum + val, 0);
-    this.avgMonthlyIncome = this.totalYearIncome / 12;
+    this.avgMonthlyIncome = this.totalYearIncome / monthValues.filter(val => val > 0).length || 0;
 
     // 3. Filter and group Symbol data for Matrix Table
     const tickerMap = new Map<string, { ticker: string, months: (number | string)[], total: number }>();

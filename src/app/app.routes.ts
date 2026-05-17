@@ -3,7 +3,6 @@ import { MainLayout } from './layout/main-layout/main-layout';
 import { Dashboard } from './features/dashboard/dashboard';
 import { Dividends } from './features/dividends/dividends';
 import { Transactions } from './features/transactions/transactions';
-import { Simulation } from './features/simulation/simulation';
 
 export const routes: Routes = [
   {
@@ -13,8 +12,7 @@ export const routes: Routes = [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: Dashboard },
       { path: 'dividends', component: Dividends },
-      { path: 'transactions', component: Transactions },
-      { path: 'simulation', component: Simulation }
+      { path: 'transactions', component: Transactions }
     ]
   }
 ];

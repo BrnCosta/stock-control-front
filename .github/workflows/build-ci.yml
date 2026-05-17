@@ -66,12 +66,7 @@ jobs:
               shell: powershell
 
             - name: Deploy to IIS
-              run: |
-                Copy-Item -Path "browser/*" -Destination ${{ env.IIS_APPLICATION_PATH }} -Recurse -Force
-                
-                if (Test-Path "web.config") {
-                  Copy-Item -Path "web.config" -Destination ${{ env.IIS_APPLICATION_PATH }} -Force
-                }
+              run: Copy-Item -Path "browser/*" -Destination ${{ env.IIS_APPLICATION_PATH }} -Recurse -Force
               shell: powershell
 
             - name: Start IIS Application Pool
