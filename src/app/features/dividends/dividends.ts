@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef, afterRenderEffect, computed, viewChild, viewChildren, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators, FormGroup } from '@angular/forms';
 import { BaseChartDirective } from 'ng2-charts';
@@ -9,17 +9,20 @@ import { DividendService } from '../../core/services/dividend.service';
 import { ToastService } from '../../core/services/toast.service';
 import { DividendByMonth, DividendBySymbol, DividendRequest } from '../../core/models/dividend.model';
 import { finalize } from 'rxjs/operators';
+import { CustomSelectComponent } from '../../shared/components/custom-select/custom-select.component';
+import { AssetService } from '../../core/services/asset.service';
 
 @Component({
   selector: 'app-dividends',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, Card, BaseChartDirective],
+  imports: [CommonModule, ReactiveFormsModule, Card, BaseChartDirective, CustomSelectComponent],
   templateUrl: './dividends.html',
   styleUrl: './dividends.css'
 })
 export class Dividends implements OnInit {
   private fb = inject(FormBuilder);
   private dividendService = inject(DividendService);
+  private assetService = inject(AssetService);
   private toastService = inject(ToastService);
   private cdr = inject(ChangeDetectorRef);
 
@@ -29,6 +32,7 @@ export class Dividends implements OnInit {
   // Filtering and Stats
   selectedYear: number = new Date().getFullYear();
   availableYears: number[] = [new Date().getFullYear()];
+  availableTickers: string[] = [];
   avgMonthlyIncome: number = 0;
   totalYearIncome: number = 0;
 
@@ -75,6 +79,8 @@ export class Dividends implements OnInit {
     datasets: [{ data: [], label: 'Dividends', backgroundColor: '#135bec', borderRadius: 4 }]
   };
 
+  constructor() {}
+
   ngOnInit() {
     this.loadCharts();
   }
@@ -109,6 +115,13 @@ export class Dividends implements OnInit {
         this.allDividendsBySymbol = bySymbol || [];
       },
       error: (e) => console.error('Error fetching by symbol:', e)
+    });
+
+    this.assetService.getAssets().subscribe({
+      next: (assets) => {
+        this.availableTickers = assets || [];
+        this.cdr.detectChanges();
+      }
     });
   }
 

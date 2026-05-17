@@ -50,7 +50,7 @@ StockControl features a **Premium Dark Mode** aesthetic designed for high-focus 
 
 ### Prerequisites
 *   Node.js (LTS version recommended)
-*   npm
+*   
 
 ### Installation
 1. Clone the repository

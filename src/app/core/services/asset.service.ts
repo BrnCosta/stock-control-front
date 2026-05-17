@@ -17,4 +17,8 @@ export class AssetService {
   updateAssetsPrices(): Observable<string> {
     return this.http.get<string>(`${this.apiUrl}/update`);
   }
+
+  getAssets(): Observable<string[]> {
+    return this.http.get<string[]>(this.apiUrl);
+  }
 }

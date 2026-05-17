@@ -1,0 +1,46 @@
+<div class="custom-select-wrapper">
+  <label *ngIf="label" [id]="id + '-label'">{{ label }}</label>
+  <div ngCombobox class="material-select" [class.is-custom]="allowCustomValue" [readonly]="!allowCustomValue">
+    <div #origin class="select">
+      <span class="combobox-label" *ngIf="!allowCustomValue">
+        <span class="selected-label-text">{{ displayValue() }}</span>
+      </span>
+      <input
+        [attr.aria-labelledby]="label ? id + '-label' : null"
+        [placeholder]="placeholder"
+        ngComboboxInput
+        [(value)]="searchString"
+        [readonly]="!allowCustomValue"
+        (input)="onInputChange($event)"
+      />
+      <span
+        class="example-arrow material-symbols-outlined"
+        translate="no"
+        aria-hidden="true"
+        >arrow_drop_down</span
+      >
+    </div>
+    <ng-template ngComboboxPopupContainer>
+      <ng-template
+        [cdkConnectedOverlay]="{origin, usePopover: 'inline', matchWidth: true}"
+        [cdkConnectedOverlayOpen]="true"
+      >
+        <div class="example-popup-container">
+          <div ngListbox [values]="value ? [value] : []">
+            @for (opt of filteredOptions; track opt) {
+              <div ngOption [value]="opt" [label]="opt.toString()">
+                <span class="example-option-text">{{ opt }}</span>
+                <span
+                  class="example-option-check material-symbols-outlined"
+                  translate="no"
+                  aria-hidden="true"
+                  >check</span
+                >
+              </div>
+            }
+          </div>
+        </div>
+      </ng-template>
+    </ng-template>
+  </div>
+</div>

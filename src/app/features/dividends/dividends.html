@@ -4,12 +4,9 @@
     <p>Track your passive income</p>
   </div>
   <div class="filter-controls">
-    <div class="form-group">
-      <label for="yearFilter">Filter by Year</label>
-      <select id="yearFilter" (change)="onYearChange(yearSelect.value)" #yearSelect [value]="selectedYear">
-        <option *ngFor="let year of availableYears" [value]="year">{{ year }}</option>
-      </select>
-    </div>
+    <app-custom-select label="Filter by Year" id="yearFilter" [options]="availableYears" [value]="selectedYear"
+      (valueChange)="onYearChange($event)">
+    </app-custom-select>
   </div>
 </div>
 
@@ -30,8 +27,10 @@
     <app-card title="Log Dividend" class="form-card">
       <form [formGroup]="dividendForm" (ngSubmit)="onSubmit()" class="dividend-form">
         <div class="form-group">
-          <label for="ticker">Asset Ticker</label>
-          <input id="ticker" type="text" formControlName="ticker" placeholder="e.g. AAPL">
+          <app-custom-select label="Asset Ticker" id="ticker" [options]="availableTickers"
+            [value]="dividendForm.get('ticker')?.value" (valueChange)="dividendForm.get('ticker')?.setValue($event)"
+            placeholder="Select a ticker">
+          </app-custom-select>
         </div>
 
         <div class="form-row">
@@ -77,17 +76,17 @@
         <thead>
           <tr>
             <th class="ticker-col">Ticker</th>
-            <th *ngFor="let month of monthsHeader" class="month-col text-right">{{ month }}</th>
-            <th class="total-col text-right">Total</th>
+            <th *ngFor="let month of monthsHeader" class="month-col">{{ month }}</th>
+            <th class="total-col">Total</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let item of assetMonthlyData">
             <td class="ticker-col"><strong>{{ item.ticker }}</strong></td>
-            <td *ngFor="let val of item.months" class="month-col text-right">
+            <td *ngFor="let val of item.months" class="month-col">
               {{ val === '-' ? '-' : (val | currency:'BRL':'symbol':'1.2-2') }}
             </td>
-            <td class="total-col text-right"><strong>{{ item.total | currency:'BRL':'symbol':'1.2-2' }}</strong></td>
+            <td class="total-col"><strong>{{ item.total | currency:'BRL':'symbol':'1.2-2' }}</strong></td>
           </tr>
         </tbody>
       </table>

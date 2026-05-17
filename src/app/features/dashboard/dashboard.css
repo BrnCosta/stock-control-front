@@ -54,12 +54,17 @@
 }
 
 .kpi-value {
-  font-size: 2rem;
+  font-size: 1.25rem;
   font-weight: 800;
 }
 
-.positive { color: var(--success); }
-.negative { color: var(--danger); }
+.positive {
+  color: var(--success);
+}
+
+.negative {
+  color: var(--danger);
+}
 
 .dashboard-content {
   display: grid;
@@ -72,7 +77,8 @@
   border-collapse: collapse;
 }
 
-.data-table th, .data-table td {
+.data-table th,
+.data-table td {
   padding: 1rem;
   text-align: left;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
@@ -84,7 +90,8 @@
   font-size: 0.875rem;
 }
 
-.empty-state, .loading-state {
+.empty-state,
+.loading-state {
   text-align: center;
   padding: 3rem;
   color: var(--text-secondary);

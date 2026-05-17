@@ -126,7 +126,7 @@ input:focus, select:focus {
 .btn-primary {
   padding: 1rem;
   border-radius: var(--radius-base);
-  background: linear-gradient(135deg, var(--primary), #114bca);
+  background: linear-gradient(135deg, var(--primary), var(--primary-hover));
   color: white;
   border: none;
   font-weight: 700;

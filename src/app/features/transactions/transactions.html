@@ -48,8 +48,10 @@
             </div>
 
             <div class="form-group">
-              <label [for]="'ticker-' + i">Ticker</label>
-              <input [id]="'ticker-' + i" type="text" formControlName="ticker" placeholder="e.g. AAPL">
+              <app-custom-select label="Ticker" [id]="'ticker-' + i" [options]="availableTickers"
+                [value]="txGroup.get('ticker')?.value" (valueChange)="txGroup.get('ticker')?.setValue($event)"
+                [allowCustomValue]="true" placeholder="Select or type a ticker">
+              </app-custom-select>
             </div>
 
             <div class="form-row">

@@ -6,10 +6,22 @@
   border-right: 1px solid rgba(255, 255, 255, 0.05);
 }
 
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  justify-content: flex-start;
+  margin-bottom: 2rem;
+}
+
+.logo img {
+  width: 40px;
+  height: 40px;
+}
+
 .logo h1 {
   font-size: 1.5rem;
   color: var(--primary);
-  margin-bottom: 2rem;
   font-weight: 800;
 }
 

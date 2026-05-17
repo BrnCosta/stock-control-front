@@ -2,8 +2,10 @@ import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators, FormGroup, FormArray } from '@angular/forms';
 import { Card } from '../../shared/components/card/card';
+import { CustomSelectComponent } from '../../shared/components/custom-select/custom-select.component';
 import { TradeService } from '../../core/services/trade.service';
 import { PositionService } from '../../core/services/position.service';
+import { AssetService } from '../../core/services/asset.service';
 import { ToastService } from '../../core/services/toast.service';
 import { Trade, TradeRequest, TransactionRequest } from '../../core/models/trade.model';
 import { Position } from '../../core/models/position.model';
@@ -12,7 +14,7 @@ import { Currency, OperationType } from '../../core/models/enums.model';
 @Component({
   selector: 'app-transactions',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, Card],
+  imports: [CommonModule, ReactiveFormsModule, Card, CustomSelectComponent],
   templateUrl: './transactions.html',
   styleUrl: './transactions.css'
 })
@@ -20,11 +22,13 @@ export class Transactions implements OnInit {
   private fb = inject(FormBuilder);
   private tradeService = inject(TradeService);
   private positionService = inject(PositionService);
+  private assetService = inject(AssetService);
   private toastService = inject(ToastService);
   private cdr = inject(ChangeDetectorRef);
 
   trades: Trade[] = [];
   positions: Position[] = [];
+  availableTickers: string[] = [];
   loading = true;
   submitting = false;
   expandedTrades: Set<string> = new Set<string>();
@@ -82,6 +86,13 @@ export class Transactions implements OnInit {
     this.positionService.getCurrentPosition().subscribe({
       next: (pos) => {
         this.positions = pos || [];
+      }
+    });
+
+    this.assetService.getAssets().subscribe({
+      next: (assets) => {
+        this.availableTickers = assets || [];
+        this.cdr.detectChanges();
       }
     });
   }
