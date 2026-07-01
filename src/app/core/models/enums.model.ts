@@ -1,7 +1,4 @@
-export enum OperationType {
-  Sell = 0,
-  Buy = 1
-}
+export type OperationType = 'Sell' | 'Buy';
 
 export enum AssetType {
   STOCK = 0,

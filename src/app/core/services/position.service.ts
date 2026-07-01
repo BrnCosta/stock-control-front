@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { API_CONFIG } from './api.config';
-import { Position, PortfolioBalance, WalletOverview } from '../models/position.model';
+import { Position, PortfolioBalance, AssetTypeOverview } from '../models/position.model';
 
 @Injectable({
   providedIn: 'root'
@@ -15,11 +15,11 @@ export class PositionService {
     return this.http.get<Position[]>(this.apiUrl);
   }
 
-  getPortfolioBalance(): Observable<PortfolioBalance> {
-    return this.http.get<PortfolioBalance>(`${this.apiUrl}/balance`);
+  getPortfolioBalance(): Observable<PortfolioBalance[]> {
+    return this.http.get<PortfolioBalance[]>(`${this.apiUrl}/balance`);
   }
 
-  getWalletOverview(): Observable<WalletOverview> {
-    return this.http.get<WalletOverview>(`${this.apiUrl}/wallet`);
+  getWalletOverview(): Observable<AssetTypeOverview[]> {
+    return this.http.get<AssetTypeOverview[]>(`${this.apiUrl}/wallet`);
   }
 }

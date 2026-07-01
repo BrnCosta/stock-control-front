@@ -1,12 +1,14 @@
 .app-container {
   display: flex;
-  height: 100vh;
-  width: 100vw;
+  height: 100%;
+  min-height: 100%;
+  width: 100%;
   overflow: hidden;
 }
 
 .main-content {
-  flex-grow: 1;
-  padding: 2rem;
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 1.75rem;
   overflow-y: auto;
 }

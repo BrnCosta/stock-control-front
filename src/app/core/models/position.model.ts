@@ -8,6 +8,7 @@ export interface Position {
   currentGain: number;
   gainPercentage: number;
   assetType: string;
+  currency: string;
 }
 
 export interface PortfolioBalance {
@@ -15,14 +16,11 @@ export interface PortfolioBalance {
   currentInvested: number;
   totalGain: number;
   gainPercentage: number;
+  currency: string;
 }
 
 export interface AssetTypeOverview {
   assetType: string;
   value: number;
-}
-
-export interface WalletOverview {
-  assetTypes: AssetTypeOverview[];
-  totalValue: number;
+  currency: string;
 }

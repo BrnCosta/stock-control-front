@@ -27,8 +27,11 @@ export class Transactions implements OnInit {
   private cdr = inject(ChangeDetectorRef);
 
   trades: Trade[] = [];
+  filteredTrades: Trade[] = [];
   positions: Position[] = [];
   availableTickers: string[] = [];
+  availableYears: number[] = [new Date().getFullYear()];
+  selectedYear: number = new Date().getFullYear();
   loading = true;
   submitting = false;
   expandedTrades: Set<string> = new Set<string>();
@@ -47,7 +50,7 @@ export class Transactions implements OnInit {
   createTransactionGroup(): FormGroup {
     return this.fb.group({
       ticker: ['', [Validators.required]],
-      operationType: ['1', [Validators.required]], // Buy = 1, Sell = 0
+      operationType: ['Buy', [Validators.required]],
       quantity: [1, [Validators.required, Validators.min(0.0001)]],
       price: [0, [Validators.required, Validators.min(0.01)]]
     });
@@ -72,12 +75,16 @@ export class Transactions implements OnInit {
     this.cdr.detectChanges();
     this.tradeService.getAllTrades().subscribe({
       next: (data) => {
-        this.trades = data || [];
+        this.trades = (data || []).filter(trade => (trade.transactions?.length ?? 0) > 0);
+        this.updateAvailableYears();
+        this.applyFilters();
         this.loading = false;
         this.cdr.detectChanges();
       },
       error: (err) => {
         console.error(err);
+        this.trades = [];
+        this.filteredTrades = [];
         this.loading = false;
         this.cdr.detectChanges();
       }
@@ -97,6 +104,33 @@ export class Transactions implements OnInit {
     });
   }
 
+  onYearChange(year: string) {
+    this.selectedYear = Number(year);
+    this.applyFilters();
+  }
+
+  updateAvailableYears() {
+    const yearsSet = new Set<number>();
+    yearsSet.add(new Date().getFullYear());
+
+    this.trades.forEach(trade => {
+      const tradeYear = new Date(trade.date).getFullYear();
+      if (!Number.isNaN(tradeYear)) {
+        yearsSet.add(tradeYear);
+      }
+    });
+
+    this.availableYears = Array.from(yearsSet).sort((a, b) => b - a);
+  }
+
+  applyFilters() {
+    this.filteredTrades = this.trades.filter(trade => {
+      const tradeYear = new Date(trade.date).getFullYear();
+      return tradeYear === this.selectedYear;
+    });
+    this.cdr.detectChanges();
+  }
+
   onSubmit() {
     if (this.tradeForm.invalid) return;
 
@@ -108,7 +142,7 @@ export class Transactions implements OnInit {
       const ticker = tx.ticker.toUpperCase();
       const quantity = Number(tx.quantity);
       
-      if (tx.operationType === '0') {
+      if (tx.operationType === 'Sell') {
         const pos = this.positions.find(p => p.ticker.toUpperCase() === ticker);
         const currentQty = pos ? pos.quantity : 0;
         if (quantity > currentQty) {
@@ -121,7 +155,7 @@ export class Transactions implements OnInit {
         ticker: ticker,
         quantity: quantity,
         price: Number(tx.price),
-        operatingType: Number(tx.operationType) as OperationType
+        operatingType: tx.operationType as OperationType
       });
     }
 

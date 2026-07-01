@@ -1,7 +1,8 @@
 .sidebar {
   width: 250px;
   background-color: var(--surface-dark);
-  height: 100vh;
+  height: 100dvh;
+  min-height: 100svh;
   padding: 2rem 1rem;
   border-right: 1px solid rgba(255, 255, 255, 0.05);
 }
@@ -20,9 +21,13 @@
 }
 
 .logo h1 {
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   color: var(--primary);
   font-weight: 800;
+}
+
+.nav-links a {
+  font-size: 0.9rem;
 }
 
 .nav-links {

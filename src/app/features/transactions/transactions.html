@@ -1,6 +1,13 @@
 <div class="header">
-  <h2>Transactions History</h2>
-  <p>Manage and log your trades</p>
+  <div>
+    <h2>Transactions History</h2>
+    <p>Manage and log your trades</p>
+  </div>
+  <div class="filter-controls">
+    <app-custom-select label="Filter by Year" id="yearFilter" [options]="availableYears" [value]="selectedYear"
+      (valueChange)="onYearChange($event)">
+    </app-custom-select>
+  </div>
 </div>
 
 <div class="transactions-container">
@@ -58,11 +65,11 @@
               <div class="form-group">
                 <label>Type</label>
                 <div class="segmented-control">
-                  <label class="segment" [class.active]="txGroup.get('operationType')?.value === '1'">
-                    <input type="radio" formControlName="operationType" value="1"> Buy
+                  <label class="segment" [class.active]="txGroup.get('operationType')?.value === 'Buy'">
+                    <input type="radio" formControlName="operationType" value="BUY"> Buy
                   </label>
-                  <label class="segment" [class.active]="txGroup.get('operationType')?.value === '0'">
-                    <input type="radio" formControlName="operationType" value="0"> Sell
+                  <label class="segment" [class.active]="txGroup.get('operationType')?.value === 'Sell'">
+                    <input type="radio" formControlName="operationType" value="SELL"> Sell
                   </label>
                 </div>
               </div>
@@ -93,10 +100,10 @@
   <div class="list-section">
     <app-card title="Recent Trades">
       <div *ngIf="loading" class="state-message">Loading trades...</div>
-      <div *ngIf="!loading && trades.length === 0" class="state-message">No trades found.</div>
+      <div *ngIf="!loading && filteredTrades.length === 0" class="state-message">No trades found for {{ selectedYear }}.</div>
 
-      <div class="trade-list" *ngIf="!loading && trades.length > 0">
-        <div class="trade-item" *ngFor="let trade of trades" [class.expanded]="isExpanded(trade.id)">
+      <div class="trade-list" *ngIf="!loading && filteredTrades.length > 0">
+        <div class="trade-item" *ngFor="let trade of filteredTrades" [class.expanded]="isExpanded(trade.id)">
           <div class="trade-header" (click)="toggleTrade(trade.id)">
             <div class="trade-main-info">
               <span class="toggle-icon">{{ isExpanded(trade.id) ? '▾' : '▸' }}</span>

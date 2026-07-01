@@ -1,7 +1,5 @@
 <div class="dashboard-header">
   <div>
-    <h2>Welcome back, Bruno Costa</h2>
-    <span class="badge">PREMIUM MEMBER</span>
   </div>
   <div class="last-update" *ngIf="lastUpdate">
     Last updated: {{ lastUpdate | date:'medium' }}
@@ -16,24 +14,32 @@
 
 <div class="kpi-grid" *ngIf="!loading && balance">
   <app-card title="Current Value">
-    <div class="kpi-value">{{ balance.currentInvested | currency:'BRL' }}</div>
+    <div *ngFor="let b of balance">
+      <div class="kpi-value">{{ b.currentInvested | currency:b.currency }}</div>
+    </div>
   </app-card>
   <app-card title="Total Invested">
-    <div class="kpi-value">{{ balance.totalInvested | currency:'BRL' }}</div>
+    <div *ngFor="let b of balance">
+      <div class="kpi-value">{{ b.totalInvested | currency:b.currency }}</div>
+    </div>
   </app-card>
   <app-card title="Total Gain / Loss">
-    <div class="kpi-value" [class.positive]="balance.totalGain >= 0" [class.negative]="balance.totalGain < 0">
-      {{ balance.totalGain >= 0 ? '+' : '' }}{{ balance.totalGain | currency:'BRL' }}
+    <div *ngFor="let b of balance">
+      <div class="kpi-value" [class.positive]="b.totalGain >= 0" [class.negative]="b.totalGain < 0">
+        {{ b.totalGain >= 0 ? '+' : '' }}{{ b.totalGain | currency:b.currency }}
+      </div>
     </div>
   </app-card>
   <app-card title="Gain %">
-    <div class="kpi-value" [class.positive]="balance.gainPercentage >= 0" [class.negative]="balance.gainPercentage < 0">
-      {{ balance.gainPercentage >= 0 ? '+' : '' }}{{ balance.gainPercentage | number:'1.2-2' }}%
+    <div *ngFor="let b of balance">
+      <div class="kpi-value" [class.positive]="b.gainPercentage >= 0" [class.negative]="b.gainPercentage < 0">
+        {{ b.gainPercentage >= 0 ? '+' : '' }}{{ b.gainPercentage | number:'1.2-2' }}%
+      </div>
     </div>
   </app-card>
 </div>
 
-<div class="dashboard-content" *ngIf="!loading">
+<div class="dashboard-content" *ngIf="!loading && balance">
   <app-card title="Holdings Details" class="holdings-card">
     <table class="data-table">
       <thead>
@@ -44,19 +50,28 @@
           <th>Avg Price</th>
           <th>Current Price</th>
           <th>Gain</th>
+          <th>Comp</th>
         </tr>
       </thead>
       <tbody>
         <tr *ngFor="let pos of positions">
           <td><strong>{{ pos.ticker }}</strong></td>
-          <td><span class="badge">{{ pos.assetType }}</span></td>
+          <td>
+            <span
+              class="badge"
+              [style.background-color]="getAssetTypeColor(pos.assetType) + '20'"
+              [style.color]="getAssetTypeColor(pos.assetType)">
+              {{ pos.assetType }}
+            </span>
+          </td>
           <td>{{ pos.quantity }}</td>
-          <td>{{ pos.averagePrice | currency:'BRL' }}</td>
-          <td>{{ pos.currentPrice | currency:'BRL' }}</td>
+          <td>{{ pos.averagePrice | currency:pos.currency }}</td>
+          <td>{{ pos.currentPrice | currency:pos.currency }}</td>
           <td [class.positive]="pos.currentGain >= 0" [class.negative]="pos.currentGain < 0">
-            {{ pos.currentGain >= 0 ? '+' : '' }}{{ pos.currentGain | currency:'BRL' }}
+            {{ pos.currentGain >= 0 ? '+' : '' }}{{ pos.currentGain | currency:pos.currency }}
             <small>({{ pos.gainPercentage | number:'1.2-2' }}%)</small>
           </td>
+          <td>{{ (pos.currentPrice * pos.quantity) / balance.find((b) => b.currency === pos.currency)!.currentInvested * 100 | number:'1.0-2' }}%</td>
         </tr>
       </tbody>
     </table>
@@ -68,7 +83,7 @@
   <app-card title="Portfolio Distribution" class="insights-card" *ngIf="wallet">
     <div class="insights-content">
       <p style="margin-top: 0; color: var(--text-secondary); margin-bottom: 1.5rem;">
-        Your portfolio is currently distributed across {{ wallet.assetTypes.length }} asset types.
+        Your portfolio is currently distributed across {{ wallet.length }} asset types.
       </p>
 
       <div class="chart-container" style="position: relative; height: 200px; width: 100%;">
@@ -76,10 +91,10 @@
         </canvas>
       </div>
 
-      <div *ngFor="let item of wallet.assetTypes">
+      <div *ngFor="let item of wallet">
         <div class="wallet-total">
           <span style="color: var(--text-secondary);">{{ item.assetType | titlecase }}:</span>
-          <strong>{{ item.value | currency:'BRL' }}</strong>
+          <strong>{{ item.value | currency:item.currency }}</strong>
         </div>
       </div>
     </div>

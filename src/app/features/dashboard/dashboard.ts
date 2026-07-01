@@ -5,7 +5,7 @@ import { ChartConfiguration, ChartData } from 'chart.js';
 import { Card } from '../../shared/components/card/card';
 import { PositionService } from '../../core/services/position.service';
 import { AssetService } from '../../core/services/asset.service';
-import { PortfolioBalance, Position, WalletOverview } from '../../core/models/position.model';
+import { PortfolioBalance, Position, AssetTypeOverview } from '../../core/models/position.model';
 import { finalize } from 'rxjs/operators';
 
 @Component({
@@ -20,9 +20,9 @@ export class Dashboard implements OnInit {
   private assetService = inject(AssetService);
   private cdr = inject(ChangeDetectorRef);
 
-  balance?: PortfolioBalance;
+  balance?: PortfolioBalance[];
   positions: Position[] = [];
-  wallet?: WalletOverview;
+  wallet?: AssetTypeOverview[];
   lastUpdate?: string;
   loading = true;
 
@@ -37,6 +37,26 @@ export class Dashboard implements OnInit {
     }
   };
   public pieChartData?: ChartData<'pie', number[], string | string[]>;
+
+  private readonly assetTypePalette = [
+    'rgba(51, 104, 209, 0.99)',
+    'rgba(16, 185, 129, 0.8)',
+    'rgba(245, 158, 11, 0.8)',
+    'rgba(139, 92, 246, 0.8)',
+    'rgba(239, 68, 68, 0.8)',
+    'rgba(6, 182, 212, 0.8)',
+    'rgba(236, 72, 153, 0.8)'
+  ];
+
+  private readonly assetTypeColorMap: Record<string, string> = {
+    stock: this.assetTypePalette[0],
+    reit: this.assetTypePalette[1],
+    etf: this.assetTypePalette[2],
+    bond: this.assetTypePalette[3],
+    crypto: this.assetTypePalette[4],
+    cash: this.assetTypePalette[5],
+    fund: this.assetTypePalette[6]
+  };
 
   ngOnInit() {
     this.loadData();
@@ -57,6 +77,22 @@ export class Dashboard implements OnInit {
     });
   }
 
+  getAssetTypeColor(assetType?: string): string {
+    const normalized = (assetType || '').trim().toLowerCase().replace(/s$/, '');
+
+    if (this.assetTypeColorMap[normalized]) {
+      return this.assetTypeColorMap[normalized];
+    }
+
+    let hash = 0;
+    for (let i = 0; i < normalized.length; i++) {
+      hash = normalized.charCodeAt(i) + ((hash << 5) - hash);
+    }
+
+    const index = Math.abs(hash) % this.assetTypePalette.length;
+    return this.assetTypePalette[index];
+  }
+
   loadData() {
     this.loading = true;
     let pending = 3;
@@ -69,7 +105,13 @@ export class Dashboard implements OnInit {
     };
 
     this.positionService.getPortfolioBalance().pipe(finalize(checkDone)).subscribe({
-      next: (b) => { if (b) this.balance = b; this.cdr.detectChanges(); },
+      next: (b) => {
+        if (b) {
+          this.balance = b;
+        }
+
+        this.cdr.detectChanges();
+      },
       error: (e) => console.error('Error balance:', e)
     });
 
@@ -83,16 +125,10 @@ export class Dashboard implements OnInit {
         if (w) {
           this.wallet = w;
           this.pieChartData = {
-            labels: w.assetTypes.map(a => a.assetType),
+            labels: this.wallet.map(a => a.assetType),
             datasets: [{
-              data: w.assetTypes.map(a => a.value),
-              backgroundColor: [
-                'rgba(19, 91, 236, 0.8)',
-                'rgba(16, 185, 129, 0.8)',
-                'rgba(245, 158, 11, 0.8)',
-                'rgba(139, 92, 246, 0.8)',
-                'rgba(239, 68, 68, 0.8)'
-              ],
+              data: this.wallet.map(a => a.value),
+              backgroundColor: this.wallet.map(item => this.getAssetTypeColor(item.assetType)),
               borderColor: 'rgba(255, 255, 255, 0.1)',
               borderWidth: 1
             }]
