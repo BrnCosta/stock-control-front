@@ -32,6 +32,8 @@ export class Dividends implements OnInit {
   // Filtering and Stats
   selectedYear: number = new Date().getFullYear();
   availableYears: number[] = [new Date().getFullYear()];
+  selectedCurrency = 'BRL';
+  availableCurrencies: string[] = ['BRL'];
   availableTickers: string[] = [];
   avgMonthlyIncome: number = 0;
   totalYearIncome: number = 0;
@@ -90,6 +92,11 @@ export class Dividends implements OnInit {
     this.applyFilters();
   }
 
+  onCurrencyChange(currency: string) {
+    this.selectedCurrency = currency;
+    this.applyFilters();
+  }
+
   loadCharts() {
     this.loading = true;
     let pending = 2;
@@ -97,6 +104,7 @@ export class Dividends implements OnInit {
       pending--;
       if (pending === 0) {
         this.loading = false;
+        this.updateAvailableCurrencies();
         this.applyFilters();
         this.cdr.detectChanges();
       }
@@ -132,14 +140,27 @@ export class Dividends implements OnInit {
     this.availableYears = Array.from(yearsSet).sort((a, b) => b - a);
   }
 
+  updateAvailableCurrencies() {
+    const currencies = new Set<string>();
+    this.allDividendsByMonth.forEach(dividend => currencies.add(dividend.currency));
+    this.allDividendsBySymbol.forEach(dividend => currencies.add(dividend.currency));
+    this.availableCurrencies = Array.from(currencies).sort();
+
+    if (this.availableCurrencies.length > 0 && !this.availableCurrencies.includes(this.selectedCurrency)) {
+      this.selectedCurrency = this.availableCurrencies[0];
+    }
+  }
+
   applyFilters() {
     // 1. Filter and aggregate Bar Chart data
-    const yearData = this.allDividendsByMonth.filter(d => d.year === this.selectedYear);
+    const yearData = this.allDividendsByMonth.filter(d =>
+      d.year === this.selectedYear && d.currency === this.selectedCurrency
+    );
     const monthValues = new Array(12).fill(0);
     
     yearData.forEach(d => {
       if (d.month >= 1 && d.month <= 12) {
-        monthValues[d.month - 1] = d.totalValue;
+        monthValues[d.month - 1] += d.totalValue;
       }
     });
 
@@ -161,7 +182,7 @@ export class Dividends implements OnInit {
     const tickerMap = new Map<string, { ticker: string, months: (number | string)[], total: number }>();
     
     this.allDividendsBySymbol
-      .filter(d => d.year === this.selectedYear)
+      .filter(d => d.year === this.selectedYear && d.currency === this.selectedCurrency)
       .forEach(d => {
         if (!tickerMap.has(d.asset)) {
           tickerMap.set(d.asset, {

@@ -124,10 +124,14 @@ export class Transactions implements OnInit {
   }
 
   applyFilters() {
-    this.filteredTrades = this.trades.filter(trade => {
-      const tradeYear = new Date(trade.date).getFullYear();
-      return tradeYear === this.selectedYear;
-    });
+    this.filteredTrades = this.trades
+      .filter(trade => {
+        const tradeYear = new Date(trade.date).getFullYear();
+        return tradeYear === this.selectedYear;
+      })
+      .sort((left, right) => {
+        return new Date(right.date).getTime() - new Date(left.date).getTime();
+      });
     this.cdr.detectChanges();
   }
 
@@ -215,6 +219,12 @@ export class Transactions implements OnInit {
 
   isExpanded(tradeId: string): boolean {
     return this.expandedTrades.has(tradeId);
+  }
+
+  getTradeTotal(trade: Trade): number {
+    return trade.transactions.reduce((total, transaction) => {
+      return total + transaction.quantity * transaction.price;
+    }, 0);
   }
 }
 

@@ -1,12 +1,22 @@
 <div class="dashboard-header">
   <div>
+    <h2 class="page-title">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 13h6V4H4v9Zm0 7h6v-5H4v5Zm10 0h6v-9h-6v9Zm0-16v5h6V4h-6Z" /></svg>
+      Dashboard
+    </h2>
   </div>
   <div class="last-update" *ngIf="lastUpdate">
     Last updated: {{ lastUpdate | date:'medium' }}
-    <button class="icon-btn refresh-btn" title="Refresh data" (click)="updateAssetsPrices()">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+    <button class="icon-btn refresh-btn" [class.is-refreshing]="refreshing" [disabled]="refreshing"
+      [attr.aria-label]="refreshing ? 'Refreshing data' : 'Refresh data'"
+      [title]="refreshing ? 'Refreshing data' : 'Refresh data'" (click)="updateAssetsPrices()">
+      <span *ngIf="refreshing" class="loading-spinner loading-spinner--button" aria-hidden="true"></span>
+      <svg *ngIf="!refreshing" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
         stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.92-12.28l5.67 5.67" />
+        <path d="M20 11a8.1 8.1 0 0 0-14.7-4.7L3 8" />
+        <path d="M3 3v5h5" />
+        <path d="M4 13a8.1 8.1 0 0 0 14.7 4.7L21 16" />
+        <path d="M21 21v-5h-5" />
       </svg>
     </button>
   </div>
@@ -41,40 +51,47 @@
 
 <div class="dashboard-content" *ngIf="!loading && balance">
   <app-card title="Holdings Details" class="holdings-card">
-    <table class="data-table">
-      <thead>
-        <tr>
-          <th>Asset</th>
-          <th>Type</th>
-          <th>Quantity</th>
-          <th>Avg Price</th>
-          <th>Current Price</th>
-          <th>Gain</th>
-          <th>Comp</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let pos of positions">
-          <td><strong>{{ pos.ticker }}</strong></td>
-          <td>
-            <span
-              class="badge"
-              [style.background-color]="getAssetTypeColor(pos.assetType) + '20'"
-              [style.color]="getAssetTypeColor(pos.assetType)">
-              {{ pos.assetType }}
-            </span>
-          </td>
-          <td>{{ pos.quantity }}</td>
-          <td>{{ pos.averagePrice | currency:pos.currency }}</td>
-          <td>{{ pos.currentPrice | currency:pos.currency }}</td>
-          <td [class.positive]="pos.currentGain >= 0" [class.negative]="pos.currentGain < 0">
-            {{ pos.currentGain >= 0 ? '+' : '' }}{{ pos.currentGain | currency:pos.currency }}
-            <small>({{ pos.gainPercentage | number:'1.2-2' }}%)</small>
-          </td>
-          <td>{{ (pos.currentPrice * pos.quantity) / balance.find((b) => b.currency === pos.currency)!.currentInvested * 100 | number:'1.0-2' }}%</td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="currency-table-group" *ngFor="let group of currencyGroups">
+      <h3 class="currency-table-title">{{ group.currency }} Holdings</h3>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th [attr.aria-sort]="sortKey === 'ticker' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'"><button class="sort-button" (click)="sortPositions('ticker')">Asset <span>{{ getSortIndicator('ticker') }}</span></button></th>
+            <th [attr.aria-sort]="sortKey === 'assetType' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'"><button class="sort-button" (click)="sortPositions('assetType')">Type <span>{{ getSortIndicator('assetType') }}</span></button></th>
+            <th [attr.aria-sort]="sortKey === 'quantity' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'"><button class="sort-button" (click)="sortPositions('quantity')">Quantity <span>{{ getSortIndicator('quantity') }}</span></button></th>
+            <th [attr.aria-sort]="sortKey === 'averagePrice' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'"><button class="sort-button" (click)="sortPositions('averagePrice')">Avg Price <span>{{ getSortIndicator('averagePrice') }}</span></button></th>
+            <th [attr.aria-sort]="sortKey === 'currentPrice' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'"><button class="sort-button" (click)="sortPositions('currentPrice')">Current Price <span>{{ getSortIndicator('currentPrice') }}</span></button></th>
+            <th [attr.aria-sort]="sortKey === 'currentInvested' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'"><button class="sort-button" (click)="sortPositions('currentInvested')">Current Invested <span>{{ getSortIndicator('currentInvested') }}</span></button></th>
+            <th [attr.aria-sort]="sortKey === 'totalInvested' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'"><button class="sort-button" (click)="sortPositions('totalInvested')">Total Invested <span>{{ getSortIndicator('totalInvested') }}</span></button></th>
+            <th [attr.aria-sort]="sortKey === 'currentGain' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'"><button class="sort-button" (click)="sortPositions('currentGain')">Gain <span>{{ getSortIndicator('currentGain') }}</span></button></th>
+            <th>Comp</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let pos of group.positions">
+            <td><strong>{{ pos.ticker }}</strong></td>
+            <td>
+              <span
+                class="badge"
+                [style.background-color]="getAssetTypeColor(pos.assetType) + '20'"
+                [style.color]="getAssetTypeColor(pos.assetType)">
+                {{ pos.assetType }}
+              </span>
+            </td>
+            <td>{{ pos.quantity }}</td>
+            <td>{{ pos.averagePrice | currency:pos.currency }}</td>
+            <td>{{ pos.currentPrice | currency:pos.currency }}</td>
+            <td>{{ pos.currentInvested | currency:pos.currency }}</td>
+            <td>{{ pos.totalInvested | currency:pos.currency }}</td>
+            <td [class.positive]="pos.currentGain >= 0" [class.negative]="pos.currentGain < 0">
+              {{ pos.currentGain >= 0 ? '+' : '' }}{{ pos.currentGain | currency:pos.currency }}
+              <small>({{ pos.gainPercentage | number:'1.2-2' }}%)</small>
+            </td>
+            <td>{{ (pos.currentPrice * pos.quantity) / balance.find((b) => b.currency === pos.currency)!.currentInvested * 100 | number:'1.0-2' }}%</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
     <div *ngIf="positions.length === 0" class="empty-state">
       No holdings found. Go to Transactions to add a trade.
     </div>
@@ -93,7 +110,7 @@
 
       <div *ngFor="let item of wallet">
         <div class="wallet-total">
-          <span style="color: var(--text-secondary);">{{ item.assetType | titlecase }}:</span>
+          <span style="color: var(--text-secondary);">{{ item.assetType | uppercase }}:</span>
           <strong>{{ item.value | currency:item.currency }}</strong>
         </div>
       </div>
@@ -102,5 +119,6 @@
 </div>
 
 <div *ngIf="loading" class="loading-state">
-  Loading portfolio data...
+  <span class="loading-spinner" aria-hidden="true"></span>
+  <span role="status" aria-live="polite">Loading portfolio data<span class="loading-dots" aria-hidden="true">...</span></span>
 </div>

@@ -8,6 +8,7 @@ export interface DividendByMonth {
   year: number;
   month: number;
   totalValue: number;
+  currency: string;
 }
 
 export interface DividendBySymbol {
@@ -15,4 +16,5 @@ export interface DividendBySymbol {
   year: number;
   month: number;
   totalValue: number;
+  currency: string;
 }

@@ -1,11 +1,31 @@
-<aside class="sidebar">
+<aside class="sidebar" [class.collapsed]="collapsed">
   <div class="logo">
     <img src="favicon.png" alt="Logo" width="50" height="50">
     <h1>StockControl</h1>
   </div>
   <nav class="nav-links">
-    <a routerLink="/dashboard" routerLinkActive="active">Dashboard</a>
-    <a routerLink="/dividends" routerLinkActive="active">Dividends</a>
-    <a routerLink="/transactions" routerLinkActive="active">Transactions</a>
+    <a routerLink="/dashboard" routerLinkActive="active" title="Dashboard" aria-label="Dashboard">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 13h6V4H4v9Zm0 7h6v-5H4v5Zm10 0h6v-9h-6v9Zm0-16v5h6V4h-6Z" /></svg>
+      <span>Dashboard</span>
+    </a>
+    <a routerLink="/dividends" routerLinkActive="active" title="Dividends" aria-label="Dividends">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M7 7.5C7 6.1 9.2 5 12 5s5 1.1 5 2.5S14.8 10 12 10s-5 1.1-5 2.5S9.2 15 12 15s5-1.1 5-2.5M7 16.5C7 17.9 9.2 19 12 19s5-1.1 5-2.5" /></svg>
+      <span>Dividends</span>
+    </a>
+    <a routerLink="/transactions" routerLinkActive="active" title="Transactions" aria-label="Transactions">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10M17 15l3 3-3 3M20 18h-7" /></svg>
+      <span>Transactions</span>
+    </a>
   </nav>
+  <div class="sidebar-footer">
+    <button class="sidebar-toggle" type="button" [attr.aria-label]="collapsed ? 'Expand sidebar' : 'Collapse sidebar'"
+      [title]="collapsed ? 'Expand sidebar' : 'Collapse sidebar'" (click)="toggleSidebar()">
+      <svg *ngIf="!collapsed" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="m15 18-6-6 6-6" />
+      </svg>
+      <svg *ngIf="collapsed" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="m9 18 6-6-6-6" />
+      </svg>
+    </button>
+  </div>
 </aside>

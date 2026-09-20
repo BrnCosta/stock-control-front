@@ -1,11 +1,17 @@
 <div class="header-container">
   <div class="header">
-    <h2>Dividends</h2>
+    <h2 class="page-title">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M7 7.5C7 6.1 9.2 5 12 5s5 1.1 5 2.5S14.8 10 12 10s-5 1.1-5 2.5S9.2 15 12 15s5-1.1 5-2.5M7 16.5C7 17.9 9.2 19 12 19s5-1.1 5-2.5" /></svg>
+      Dividends
+    </h2>
     <p>Track your passive income</p>
   </div>
   <div class="filter-controls">
     <app-custom-select label="Filter by Year" id="yearFilter" [options]="availableYears" [value]="selectedYear"
       (valueChange)="onYearChange($event)">
+    </app-custom-select>
+    <app-custom-select label="Currency" id="currencyFilter" [options]="availableCurrencies" [value]="selectedCurrency"
+      (valueChange)="onCurrencyChange($event)">
     </app-custom-select>
   </div>
 </div>
@@ -16,11 +22,11 @@
     <div class="stats-row">
       <app-card class="stat-card">
         <div class="stat-label">Total in {{ selectedYear }}</div>
-        <div class="stat-value small">{{ totalYearIncome | currency:'BRL':'symbol':'1.2-2' }}</div>
+        <div class="stat-value small">{{ totalYearIncome | currency:selectedCurrency:'symbol':'1.2-2' }}</div>
       </app-card>
       <app-card class="stat-card">
         <div class="stat-label">Avg. Monthly</div>
-        <div class="stat-value small">{{ avgMonthlyIncome | currency:'BRL':'symbol':'1.2-2' }}</div>
+        <div class="stat-value small">{{ avgMonthlyIncome | currency:selectedCurrency:'symbol':'1.2-2' }}</div>
       </app-card>
     </div>
 
@@ -84,9 +90,9 @@
           <tr *ngFor="let item of assetMonthlyData">
             <td class="ticker-col"><strong>{{ item.ticker }}</strong></td>
             <td *ngFor="let val of item.months" class="month-col">
-              {{ val === '-' ? '-' : (val | currency:'BRL':'symbol':'1.2-2') }}
+              {{ val === '-' ? '-' : (val | currency:selectedCurrency:'symbol':'1.2-2') }}
             </td>
-            <td class="total-col"><strong>{{ item.total | currency:'BRL':'symbol':'1.2-2' }}</strong></td>
+            <td class="total-col"><strong>{{ item.total | currency:selectedCurrency:'symbol':'1.2-2' }}</strong></td>
           </tr>
         </tbody>
       </table>

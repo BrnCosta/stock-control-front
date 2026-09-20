@@ -1,10 +1,21 @@
 .sidebar {
   width: 250px;
+  flex: 0 0 250px;
   background-color: var(--surface-dark);
   height: 100dvh;
   min-height: 100svh;
   padding: 2rem 1rem;
   border-right: 1px solid rgba(255, 255, 255, 0.05);
+  transition: width 0.25s ease, flex-basis 0.25s ease, padding 0.25s ease;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar.collapsed {
+  width: 76px;
+  flex-basis: 76px;
+  padding-inline: 0.75rem;
 }
 
 .logo {
@@ -13,6 +24,69 @@
   gap: 1rem;
   justify-content: flex-start;
   margin-bottom: 2rem;
+  min-height: 40px;
+  flex: 0 0 40px;
+}
+
+.logo h1 {
+  overflow: hidden;
+  white-space: nowrap;
+  transition: opacity 0.2s ease, width 0.25s ease;
+}
+
+.sidebar.collapsed .logo {
+  justify-content: center;
+}
+
+.sidebar.collapsed .logo h1 {
+  opacity: 0;
+  width: 0;
+}
+
+.sidebar-toggle {
+  width: 2rem;
+  height: 2rem;
+  flex: 0 0 2rem;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-secondary);
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.sidebar-footer {
+  margin-top: auto;
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 2rem;
+}
+
+.sidebar.collapsed .sidebar-footer {
+  justify-content: center;
+}
+
+.sidebar-toggle:hover,
+.sidebar-toggle:focus-visible {
+  color: var(--text-primary);
+  background-color: var(--surface-hover);
+}
+
+.sidebar-toggle:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.sidebar-toggle svg {
+  width: 1.1rem;
+  height: 1.1rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .logo img {
@@ -42,6 +116,43 @@
   color: var(--text-secondary);
   font-weight: 500;
   transition: all 0.2s ease-in-out;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  white-space: nowrap;
+}
+
+.nav-links a svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex: 0 0 1.25rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.nav-links a span {
+  opacity: 1;
+  transition: opacity 0.15s ease;
+}
+
+.sidebar.collapsed .nav-links a {
+  width: 100%;
+  justify-content: center;
+  padding-inline: 0.75rem;
+}
+
+.sidebar.collapsed .logo img,
+.sidebar.collapsed .nav-links a svg {
+  margin-inline: auto;
+}
+
+.sidebar.collapsed .nav-links a span {
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
 }
 
 .nav-links a:hover {

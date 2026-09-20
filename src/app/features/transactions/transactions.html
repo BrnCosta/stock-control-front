@@ -1,6 +1,9 @@
 <div class="header">
   <div>
-    <h2>Transactions History</h2>
+    <h2 class="page-title">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10M17 15l3 3-3 3M20 18h-7" /></svg>
+      Transactions History
+    </h2>
     <p>Manage and log your trades</p>
   </div>
   <div class="filter-controls">
@@ -112,7 +115,7 @@
               <span class="tx-count">({{ trade.transactions.length }} assets)</span>
             </div>
             <div class="trade-summary-values">
-              <small *ngIf="trade.tax" class="tax-info">Fees: {{ trade.tax | currency:trade.currency }}</small>
+              <small class="trade-total">Total: {{ getTradeTotal(trade) | currency:trade.currency }}</small>
             </div>
           </div>
 

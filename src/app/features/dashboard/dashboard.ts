@@ -8,6 +8,17 @@ import { AssetService } from '../../core/services/asset.service';
 import { PortfolioBalance, Position, AssetTypeOverview } from '../../core/models/position.model';
 import { finalize } from 'rxjs/operators';
 
+type PositionSortKey =
+  | 'ticker'
+  | 'assetType'
+  | 'quantity'
+  | 'averagePrice'
+  | 'currentPrice'
+  | 'currentInvested'
+  | 'totalInvested'
+  | 'currentGain';
+type SortDirection = 'asc' | 'desc';
+
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -25,6 +36,9 @@ export class Dashboard implements OnInit {
   wallet?: AssetTypeOverview[];
   lastUpdate?: string;
   loading = true;
+  refreshing = false;
+  sortKey?: PositionSortKey;
+  sortDirection: SortDirection = 'asc';
 
   public pieChartOptions: ChartConfiguration['options'] = {
     responsive: true,
@@ -37,6 +51,52 @@ export class Dashboard implements OnInit {
     }
   };
   public pieChartData?: ChartData<'pie', number[], string | string[]>;
+
+  get sortedPositions(): Position[] {
+    if (!this.sortKey) {
+      return this.positions;
+    }
+
+    return [...this.positions].sort((left, right) => {
+      const leftValue = left[this.sortKey!];
+      const rightValue = right[this.sortKey!];
+      const comparison = typeof leftValue === 'string' && typeof rightValue === 'string'
+        ? leftValue.localeCompare(rightValue)
+        : Number(leftValue) - Number(rightValue);
+
+      return this.sortDirection === 'asc' ? comparison : -comparison;
+    });
+  }
+
+  get currencyGroups(): { currency: string; positions: Position[] }[] {
+    const groups = new Map<string, Position[]>();
+
+    this.sortedPositions.forEach(position => {
+      const group = groups.get(position.currency) || [];
+      group.push(position);
+      groups.set(position.currency, group);
+    });
+
+    return Array.from(groups, ([currency, positions]) => ({ currency, positions }));
+  }
+
+  sortPositions(key: PositionSortKey) {
+    if (this.sortKey === key) {
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+      return;
+    }
+
+    this.sortKey = key;
+    this.sortDirection = 'asc';
+  }
+
+  getSortIndicator(key: PositionSortKey): string {
+    if (this.sortKey !== key) {
+      return '↕';
+    }
+
+    return this.sortDirection === 'asc' ? '↑' : '↓';
+  }
 
   private readonly assetTypePalette = [
     'rgba(51, 104, 209, 0.99)',
@@ -68,12 +128,24 @@ export class Dashboard implements OnInit {
   }
 
   updateAssetsPrices() {
+    if (this.refreshing) {
+      return;
+    }
+
+    this.refreshing = true;
     this.assetService.updateAssetsPrices().subscribe({
       next: (updateTime) => {
         this.lastUpdate = updateTime;
-        this.loadData();
+        this.loadData(() => {
+          this.refreshing = false;
+          this.cdr.detectChanges();
+        });
       },
-      error: (e) => console.error('Error updating assets prices:', e)
+      error: (e) => {
+        this.refreshing = false;
+        this.cdr.detectChanges();
+        console.error('Error updating assets prices:', e);
+      }
     });
   }
 
@@ -93,13 +165,14 @@ export class Dashboard implements OnInit {
     return this.assetTypePalette[index];
   }
 
-  loadData() {
+  loadData(onComplete?: () => void) {
     this.loading = true;
     let pending = 3;
     const checkDone = () => {
       pending--;
       if (pending === 0) {
         this.loading = false;
+        onComplete?.();
         this.cdr.detectChanges();
       }
     };
